@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Bias Report Card</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px 16px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 560px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tagline {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 24px;
+        }
+
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: #6366f1;
+            background: #eef2ff;
+        }
+
+        .drop-zone input {
+            display: none;
+        }
+
+        .drop-zone p {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+
+        .mapping {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .mapping label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 4px;
+            margin-top: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: #fff;
+        }
+
+        .checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.88rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-weight: 400;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #6366f1;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #4f46e5;
+        }
+
+        .btn:disabled {
+            background: #a5b4fc;
+            cursor: not-allowed;
+        }
+
+        .error-banner {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            font-size: 0.88rem;
+            display: none;
+        }
+
+        .spinner-wrap {
+            text-align: center;
+            padding: 60px 0;
+            display: none;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .spinner-wrap p {
+            margin-top: 16px;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        #results-screen {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+        }
+
+        #report-frame {
+            width: 100%;
+            border: none;
+            flex: 1;
+            min-height: 80vh;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .btn-outline {
+            flex: 1;
+            padding: 10px;
+            background: #fff;
+            color: #6366f1;
+            border: 2px solid #6366f1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-outline:hover {
+            background: #eef2ff;
+        }
+
+        .btn-fill {
+            flex: 1;
+            padding: 10px;
+            background: #6366f1;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-fill:hover {
+            background: #4f46e5;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="upload-screen" class="card">
+        <h1>AI Bias Report Card</h1>
+        <p class="tagline">Upload a CSV to check whether your AI model treats all demographic groups fairly.</p>
+
+        <div class="drop-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".csv">
+            <svg width="40" height="40" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M12 16v-8m0 0-3 3m3-3 3 3M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1" />
+            </svg>
+            <p>Drag & drop a CSV file here, or <strong>click to browse</strong></p>
+        </div>
+
+        <div class="mapping" id="mapping">
+            <label for="label-col">Ground Truth Column</label>
+            <select id="label-col"></select>
+
+            <label for="pred-col">Model Prediction Column</label>
+            <select id="pred-col"></select>
+
+            <label>Demographic Columns</label>
+            <div class="checkboxes" id="demo-checks"></div>
+
+            <button class="btn" id="generate-btn" disabled>Generate Report Card</button>
+            <div class="error-banner" id="error-banner"></div>
+        </div>
+    </div>
+
+    <div class="spinner-wrap" id="spinner">
+        <div class="spinner"></div>
+        <p>Analyzing fairness&hellip;</p>
+    </div>
+
+    <div id="results-screen">
+        <div class="results-toolbar">
+            <button class="btn-outline" id="reset-btn">Analyze another file</button>
+            <button class="btn-fill" id="download-btn">Download Report</button>
+        </div>
+        <iframe id="report-frame" title="Fairness Report"></iframe>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const mapping = document.getElementById('mapping');
+        const labelCol = document.getElementById('label-col');
+        const predCol = document.getElementById('pred-col');
+        const demoChecks = document.getElementById('demo-checks');
+        const generateBtn = document.getElementById('generate-btn');
+        const errorBanner = document.getElementById('error-banner');
+        const uploadScreen = document.getElementById('upload-screen');
+        const spinner = document.getElementById('spinner');
+        const resultsScreen = document.getElementById('results-screen');
+        const reportFrame = document.getElementById('report-frame');
+
+        let selectedFile = null;
+        let columns = [];
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+        fileInput.addEventListener('change', () => handleFile(fileInput.files[0]));
+
+        function handleFile(file) {
+            if (!file || !file.name.endsWith('.csv')) { showError('Please upload a .csv file.'); return; }
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const firstLine = e.target.result.split('\n')[0];
+                columns = firstLine.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+                populateSelects(columns);
+                mapping.style.display = 'block';
+                dropZone.querySelector('p').innerHTML = `<span class="file-name">${file.name}</span> selected`;
+                generateBtn.disabled = false;
+                hideError();
+            };
+            reader.readAsText(file);
+        }
+
+        function populateSelects(cols) {
+            [labelCol, predCol].forEach(sel => {
+                sel.innerHTML = cols.map(c => `<option value="${c}">${c}</option>`).join('');
+            });
+            // Try to pre-select sensible defaults
+            const targetIdx = cols.findIndex(c => c.toLowerCase() === 'target');
+            const predIdx = cols.findIndex(c => c.toLowerCase() === 'prediction');
+            if (targetIdx >= 0) labelCol.selectedIndex = targetIdx;
+            if (predIdx >= 0) predCol.selectedIndex = predIdx;
+
+            demoChecks.innerHTML = cols.map(c => `
+    <label><input type="checkbox" value="${c}"> ${c}</label>
+  `).join('');
+
+            // Pre-check likely demographic columns
+            const likelyDemo = ['sex', 'age_group', 'race', 'gender', 'ethnicity'];
+            demoChecks.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                if (likelyDemo.includes(cb.value.toLowerCase())) cb.checked = true;
+            });
+        }
+
+        generateBtn.addEventListener('click', async () => {
+            const label = labelCol.value;
+            const pred = predCol.value;
+            const demos = [...demoChecks.querySelectorAll('input:checked')].map(cb => cb.value);
+
+            if (demos.length === 0) { showError('Please select at least one demographic column.'); return; }
+            if (label === pred) { showError('Ground truth and prediction columns must be different.'); return; }
+
+            hideError();
+            uploadScreen.style.display = 'none';
+            spinner.style.display = 'block';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('label_col', label);
+            formData.append('prediction_col', pred);
+            formData.append('demographic_cols', JSON.stringify(demos));
+
+            try {
+                const res = await fetch('/report', { method: 'POST', body: formData });
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ detail: 'Unknown error' }));
+                    throw new Error(err.detail || JSON.stringify(err));
+                }
+                const html = await res.text();
+                spinner.style.display = 'none';
+                resultsScreen.style.display = 'flex';
+                resultsScreen.style.flexDirection = 'column';
+                reportFrame.srcdoc = html;
+                window._reportHtml = html;
+            } catch (err) {
+                spinner.style.display = 'none';
+                uploadScreen.style.display = 'block';
+                showError(err.message);
+            }
+        });
+
+        document.getElementById('download-btn').addEventListener('click', () => {
+            const blob = new Blob([window._reportHtml], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'report.html';
+            a.click();
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            resultsScreen.style.display = 'none';
+            uploadScreen.style.display = 'block';
+            mapping.style.display = 'none';
+            selectedFile = null;
+            fileInput.value = '';
+            dropZone.querySelector('p').innerHTML = 'Drag & drop a CSV file here, or <strong>click to browse</strong>';
+            generateBtn.disabled = true;
+            hideError();
+        });
+
+        function showError(msg) { errorBanner.textContent = msg; errorBanner.style.display = 'block'; }
+        function hideError() { errorBanner.style.display = 'none'; }
+    </script>
+</body>
+
+</html>
